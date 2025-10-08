@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMA APP - Ask Me Anything </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Styles for Warm and Friendly Theme */
+        body { font-family: 'Nunito', sans-serif; background-color: #FDF4ED; } /* Softer background */
+        .card { background-color: white; border: 1px solid #FAD7A0; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); } /* Softer shadow, warm border */
+        .btn-primary { background-color: #EF6C00; color: white; transition: background-color 0.2s; } /* Orange accent */
+        .btn-primary:hover { background-color: #E65100; }
+        .grandma-answer { background-color: #FFF9F2; border-left: 4px solid #EF6C00; } /* Orange accent */
+        .pending-question { background-color: #FFFBEB; } /* Soft yellow */
+        .answered-question { background-color: #E8F5E9; } /* Soft green */
+        .grandma-title { font-family: 'Comfortaa', cursive; color: #D84315; } /* Playful font for title */
+        .mood-btn { text-align: center; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div id="app" class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-10 p-6 card rounded-xl">
+            <h1 class="text-5xl font-extrabold grandma-title mb-2 flex items-center justify-center">
+                <img src="https://image.pollinations.ai/prompt/cute%20grandma%20cartoon%20avatar%20icon,%20friendly%20smile,%20warm%20colors,%20simple%20illustration,%20vector" alt="Grandma Icon" class="h-16 w-16 mr-4 rounded-full border-4 border-[#FAD7A0] p-1">
+                AMA APP - Ask Me Anything
+            </h1>
+            <p class="text-lg text-gray-700 leading-relaxed">Hi All, ask your burning questions to the AMA Gang for our next Branch Meeting Q&A. Let's make it cozy!</p>
+            <p class="mt-3 text-sm text-gray-500">Your User ID: <span id="user-id-display" class="font-mono text-xs bg-gray-100 p-1 rounded-md">Loading...</span></p>
+        </header>
+
+        <!-- Separate Action Section (Questions + Mood) -->
+        <section class="mb-10 p-6 card rounded-xl">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Employee Check-in</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+
+                <!-- 1. Question Submission Form -->
+                <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <h3 class="text-xl font-semibold text-[#D84315] mb-3">Leave a Question</h3>
+                    <form id="question-form" class="space-y-4">
+                        
+                        <!-- Who to Ask Dropdown (Required selection) -->
+                        <div>
+                            <label for="management-target" class="block text-sm font-medium text-gray-700 mb-1">Who do you want to ask?</label>
+                            <select id="management-target" required
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[#EF6C00] focus:border-[#EF6C00]">
+                                <option value="" disabled selected>Select a "Grandma" to address</option>
+                                <option value="Apisith"> Apisith </option>
+                                <option value="Yuri"> Yuri </option>
+                                <option value="Lisa ">Lisa </option>
+                                <option value="Miow"> Miow </option>
+                                <option value="View">View</option>
+                                <option value="Joann">Joann</option>
+                                <option value="Fa">Fa</option>
+                                <option value="General">General Question</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="question-text" class="block text-sm font-medium text-gray-700 mb-1">Your Question (Keep it sweet!):</label>
+                            <textarea id="question-text" rows="3" required
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[#EF6C00] focus:border-[#EF6C00] resize-none"
+                                placeholder="Grandma, how can we make our next potluck even better?"></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input id="is-anonymous" type="checkbox" checked
+                                    class="h-4 w-4 text-[#EF6C00] border-gray-300 rounded focus:ring-[#EF6C00]">
+                                <label for="is-anonymous" class="ml-2 block text-sm text-gray-900">
+                                    Ask Anonymously
+                                </label>
+                            </div>
+                            <button type="submit" id="submit-btn" class="px-6 py-2 rounded-full font-bold btn-primary">
+                                Send Question
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 2. Mood Submission (One-Tap Buttons) & Dashboard -->
+                <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <h3 class="text-xl font-semibold text-[#D84315] mb-3">Quick Mood Check-in</h3>
+                    
+                    <div id="mood-buttons" class="grid grid-cols-3 gap-3">
+                        <button type="button" data-mood="Happy 😄" class="mood-btn p-3 rounded-lg border border-green-400 bg-green-50 text-green-700 hover:bg-green-100 transition shadow-sm">Happy 😄</button>
+                        <button type="button" data-mood="Curious 🤔" class="mood-btn p-3 rounded-lg border border-blue-400 bg-blue-50 text-blue-700 hover:bg-blue-100 transition shadow-sm">Curious 🤔</button>
+                        <button type="button" data-mood="Motivated 💪" class="mood-btn p-3 rounded-lg border border-yellow-400 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition shadow-sm">Motivated 💪</button>
+                        <button type="button" data-mood="Neutral 😐" class="mood-btn p-3 rounded-lg border border-gray-400 bg-gray-50 text-gray-700 hover:bg-gray-100 transition shadow-sm">Neutral 😐</button>
+                        <button type="button" data-mood="High Workload 😥" class="mood-btn p-3 rounded-lg border border-orange-400 bg-orange-50 text-orange-700 hover:bg-orange-100 transition shadow-sm">High Workload 😥</button>
+                        <button type="button" data-mood="Stressed 😟" class="mood-btn p-3 rounded-lg border border-red-400 bg-red-50 text-red-700 hover:bg-red-100 transition shadow-sm">Stressed 😟</button>
+                    </div>
+                    <p id="mood-message" class="text-center text-sm text-green-600 mt-3 hidden font-semibold">Mood recorded!</p>
+
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <h4 class="text-lg font-semibold text-gray-700 mb-3">Team Mood Summary</h4>
+                        <div id="mood-summary" class="grid grid-cols-2 gap-4 text-center">
+                            <!-- Mood counts will be rendered here -->
+                            <p class="text-sm text-gray-500 col-span-2">Tracking recent check-ins...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Questions List -->
+        <section class="p-6 card rounded-xl">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Grandma's Mailbag</h2>
+            <div id="questions-list" class="space-y-6">
+                <p id="loading-message" class="text-center text-gray-500">Checking Grandma's mailbag for questions...</p>
+                <!-- Questions will be dynamically inserted here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Management Answer Modal -->
+    <div id="answer-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="card rounded-xl p-6 w-full max-w-lg">
+            <h3 class="text-xl font-bold text-[#EF6C00] mb-4">Grandma's Response</h3>
+            <p class="mb-4 text-gray-700" id="modal-question-text"></p>
+            <textarea id="answer-text" rows="5" placeholder="Dear Grandchild, I have thought about your question..."
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[#EF6C00] focus:border-[#EF6C00] resize-none"></textarea>
+
+            <div class="flex justify-end space-x-3 mt-4">
+                <button id="cancel-answer-btn" class="px-4 py-2 text-gray-700 rounded-full border border-gray-300 hover:bg-gray-100">
+                    Cancel
+                </button>
+                <button id="submit-answer-btn" class="px-4 py-2 rounded-full font-bold btn-primary">
+                    Post Answer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Imports and Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, addDoc, serverTimestamp, setLogLevel, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // IMPORTANT: Global variables provided by the canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-grandma-ama';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app, db, auth, userId = null;
+        let selectedQuestionId = null;
+        
+        // Define both collections
+        const QUESTION_COLLECTION = `artifacts/${appId}/public/data/grandma_ama_questions`;
+        const MOOD_COLLECTION = `artifacts/${appId}/public/data/grandma_mood_checkins`;
+
+        // Utility to convert user ID for display
+        const getDisplayUserId = (uid) => uid ? `...${uid.slice(-8)}` : 'N/A';
+        const getUsername = (uid) => uid ? `Grandchild-${uid.slice(0, 4)}` : 'Anonymous';
+
+        /**
+         * Initializes Firebase and authenticates the user.
+         */
+        async function initFirebase() {
+            setLogLevel('Debug');
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase configuration is missing.");
+                document.getElementById('loading-message').textContent = "Error: Firebase configuration is missing.";
+                return;
+            }
+
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authentication
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Wait for auth state change to get the user ID
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        document.getElementById('user-id-display').textContent = getDisplayUserId(userId);
+                        console.log("User authenticated. UID:", userId);
+                        document.getElementById('loading-message').textContent = "Listening for questions...";
+                        loadQuestions();
+                        loadMoodSummary(); // Load mood summary separately
+                    } else {
+                        console.warn("No user is signed in.");
+                        document.getElementById('loading-message').textContent = "Please refresh to sign in.";
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase or during authentication:", error);
+                document.getElementById('loading-message').textContent = `Authentication Error: ${error.message}`;
+            }
+        }
+
+        // --- Question Logic ---
+
+        /**
+         * Loads questions from Firestore in real-time.
+         */
+        function loadQuestions() {
+            if (!db) return;
+
+            const q = query(collection(db, QUESTION_COLLECTION), orderBy("timestamp", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                const questions = [];
+                snapshot.forEach((doc) => {
+                    questions.push({ id: doc.id, ...doc.data() });
+                });
+                renderQuestions(questions);
+            }, (error) => {
+                console.error("Error fetching questions:", error);
+                document.getElementById('questions-list').innerHTML = `<p class="text-red-500">Error loading data: ${error.message}</p>`;
+            });
+        }
+        
+        /**
+         * Renders the list of questions and answers.
+         */
+        function renderQuestions(questions) {
+            const listContainer = document.getElementById('questions-list');
+            listContainer.innerHTML = '';
+
+            if (questions.length === 0) {
+                listContainer.innerHTML = `<p class="text-center text-gray-500 py-8">No questions yet. Be the first one!</p>`;
+                return;
+            }
+
+            questions.forEach(q => {
+                const isAnswered = q.status === 'answered' && q.answerText;
+                const authorName = q.isAnonymous ? "Anonymous Grandchild" : (q.username || getUsername(q.userId));
+                const targetName = q.managementTarget || 'General Question';
+                const statusColor = isAnswered ? 'text-green-600' : 'text-yellow-600';
+                const cardClasses = isAnswered ? 'answered-question' : 'pending-question';
+                const timeStr = q.timestamp && q.timestamp.toDate ? q.timestamp.toDate().toLocaleString() : 'Just now';
+                
+                const questionHTML = `
+                    <div class="p-4 card rounded-lg ${cardClasses}">
+                        <div class="flex justify-between items-start">
+                            <p class="text-gray-800 font-medium text-lg mb-2">${q.questionText}</p>
+                            <span class="text-xs font-semibold ${statusColor} ml-4 whitespace-nowrap">
+                                ${isAnswered ? 'ANSWERED' : 'PENDING'}
+                            </span>
+                        </div>
+                        <!-- Display target -->
+                        <p class="text-sm text-gray-600 mb-2">
+                            Addressed to: <span class="font-bold text-[#D84315]">${targetName}</span>
+                        </p>
+                        
+                        <p class="text-xs text-gray-500 mb-3">
+                            Asked by <span class="font-semibold">${authorName}</span> at ${timeStr}
+                        </p>
+                        ${isAnswered ? `
+                            <div class="grandma-answer p-3 mt-3 rounded-md">
+                                <p class="text-sm font-bold text-[#EF6C00] mb-1">Grandma's Answer:</p>
+                                <p class="text-sm text-gray-700">${q.answerText}</p>
+                            </div>
+                        ` : `
+                            <button data-id="${q.id}" class="answer-btn px-4 py-1 mt-3 text-xs rounded-full font-semibold border border-[#EF6C00] text-[#EF6C00] hover:bg-[#EF6C00] hover:text-white transition">
+                                Answer (Management Only)
+                            </button>
+                        `}
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', questionHTML);
+            });
+
+            // Attach event listeners for answer buttons
+            document.querySelectorAll('.answer-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const questionId = e.target.dataset.id;
+                    const question = questions.find(q => q.id === questionId);
+                    openAnswerModal(questionId, question.questionText);
+                });
+            });
+        }
+
+        /**
+         * Handles the question submission form.
+         */
+        async function handleQuestionSubmit(e) {
+            e.preventDefault();
+
+            if (!userId) {
+                console.error("User not authenticated. Cannot submit question.");
+                return;
+            }
+
+            const form = document.getElementById('question-form');
+            const questionText = document.getElementById('question-text').value.trim();
+            const managementTarget = document.getElementById('management-target').value;
+            const isAnonymous = document.getElementById('is-anonymous').checked;
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (!questionText || !managementTarget) { 
+                console.warn("Please enter a question and select a management target.");
+                return; 
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
+            try {
+                const newQuestion = {
+                    userId: userId,
+                    username: isAnonymous ? null : getUsername(userId),
+                    questionText: questionText,
+                    managementTarget: managementTarget,
+                    isAnonymous: isAnonymous,
+                    timestamp: serverTimestamp(),
+                    status: 'pending', 
+                    answerText: null
+                };
+
+                await addDoc(collection(db, QUESTION_COLLECTION), newQuestion);
+
+                form.reset();
+                document.getElementById('is-anonymous').checked = true;
+                // Reset select field
+                document.getElementById('management-target').value = ''; 
+                console.log("Question submitted successfully.");
+
+            } catch (error) {
+                console.error("Error submitting question:", error);
+                console.error("Failed to submit question. Check console for details."); 
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Question';
+            }
+        }
+        
+        // --- Mood Logic ---
+
+        /**
+         * Handles the one-tap mood submission.
+         */
+        async function handleMoodSubmit(moodValue) {
+            if (!userId) {
+                console.error("User not authenticated. Cannot submit mood.");
+                return;
+            }
+
+            try {
+                // Submit mood to the dedicated collection
+                await addDoc(collection(db, MOOD_COLLECTION), {
+                    userId: userId,
+                    employeeMood: moodValue,
+                    timestamp: serverTimestamp(),
+                });
+
+                const msg = document.getElementById('mood-message');
+                msg.textContent = `Mood "${moodValue}" recorded!`;
+                msg.classList.remove('hidden');
+                setTimeout(() => msg.classList.add('hidden'), 3000);
+
+            } catch (error) {
+                console.error("Error submitting mood:", error);
+                // NOTE: Using console error instead of alert
+                console.error("Failed to record mood. Check console for details.");
+            }
+        }
+
+        /**
+         * Loads mood check-ins from Firestore and calculates the summary.
+         */
+        function loadMoodSummary() {
+            if (!db) return;
+
+            // Query only the last 50 check-ins to prevent reading massive amounts of data
+            const q = query(collection(db, MOOD_COLLECTION), orderBy("timestamp", "desc"), limit(50));
+
+            onSnapshot(q, (snapshot) => {
+                const moodCounts = {};
+                let total = 0;
+
+                snapshot.forEach(doc => {
+                    const mood = doc.data().employeeMood;
+                    if (mood) {
+                        moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+                        total++;
+                    }
+                });
+                renderMoodSummary(moodCounts, total);
+            }, (error) => {
+                console.error("Error fetching mood summary:", error);
+            });
+        }
+
+        /**
+         * Renders the mood summary counts.
+         */
+        function renderMoodSummary(counts, total) {
+            const summaryContainer = document.getElementById('mood-summary');
+            summaryContainer.innerHTML = '';
+
+            if (total === 0) {
+                summaryContainer.innerHTML = `<p class="text-sm text-gray-500 col-span-2">No recent check-ins.</p>`;
+                return;
+            }
+
+            // Define all moods to ensure consistent display order
+            const moodOrder = [
+                "Happy 😄", "Curious 🤔", "Motivated 💪", 
+                "Neutral 😐", "High Workload 😥", "Stressed 😟"
+            ];
+
+            // Filter to include only moods with a count > 0 for display
+            const activeMoods = moodOrder.filter(mood => counts[mood] > 0);
+
+            activeMoods.forEach(mood => {
+                const count = counts[mood] || 0;
+                const percentage = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+                
+                const moodItem = `
+                    <div class="flex flex-col items-center p-2 bg-white rounded-lg border border-gray-100 shadow-sm">
+                        <span class="text-2xl font-bold text-gray-800">${count}</span>
+                        <span class="text-xs text-gray-500">${mood}</span>
+                        <span class="text-xs font-semibold mt-1 text-[#EF6C00]">${percentage}%</span>
+                    </div>
+                `;
+                summaryContainer.insertAdjacentHTML('beforeend', moodItem);
+            });
+             if (total > 0) {
+                const totalItem = `
+                    <div class="flex flex-col items-center p-2 bg-gray-100 rounded-lg col-span-2 mt-2">
+                        <span class="text-xl font-bold text-gray-800">Total Check-ins: ${total} (Last 50)</span>
+                    </div>
+                `;
+                summaryContainer.insertAdjacentHTML('beforeend', totalItem);
+            }
+        }
+
+        // --- Management Answer Modal Logic ---
+
+        function openAnswerModal(id, text) {
+            selectedQuestionId = id;
+            document.getElementById('modal-question-text').textContent = text;
+            document.getElementById('answer-text').value = '';
+            document.getElementById('answer-modal').classList.remove('hidden');
+            document.getElementById('answer-modal').classList.add('flex');
+        }
+
+        function closeAnswerModal() {
+            selectedQuestionId = null;
+            document.getElementById('answer-modal').classList.add('hidden');
+            document.getElementById('answer-modal').classList.remove('flex');
+        }
+
+        async function handleAnswerSubmit() {
+            const answerText = document.getElementById('answer-text').value.trim();
+            const submitBtn = document.getElementById('submit-answer-btn');
+
+            if (!selectedQuestionId || !answerText) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting...';
+
+            try {
+                const questionRef = doc(db, QUESTION_COLLECTION, selectedQuestionId);
+
+                await updateDoc(questionRef, {
+                    answerText: answerText,
+                    status: 'answered',
+                    answeredAt: serverTimestamp(),
+                    answeredBy: userId 
+                });
+
+                console.log(`Question ${selectedQuestionId} answered successfully.`);
+                closeAnswerModal();
+
+            } catch (error) {
+                console.error("Error submitting answer:", error);
+                console.error("Failed to post answer. Check console for details.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Post Answer';
+            }
+        }
+
+        // --- Event Listeners and Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Question Form Listener
+            document.getElementById('question-form').addEventListener('submit', handleQuestionSubmit);
+            
+            // Mood Button Listeners
+            document.getElementById('mood-buttons').querySelectorAll('.mood-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    handleMoodSubmit(e.target.dataset.mood);
+                });
+            });
+
+            // Modal Listeners
+            document.getElementById('cancel-answer-btn').addEventListener('click', closeAnswerModal);
+            document.getElementById('submit-answer-btn').addEventListener('click', handleAnswerSubmit);
+            
+            initFirebase();
+        });
+
+    </script>
+</body>
+</html>
